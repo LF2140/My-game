@@ -109,7 +109,6 @@ void RenderWindow::render(Entity& p_entity)
     dst.y = p_entity.Get_y();
     dst.w = p_entity.Get_CurrentFrame().w / 16 ;
     dst.h = p_entity.Get_CurrentFrame().h / 16 ;
-
     SDL_RenderCopy(renderer, p_entity.Get_tex(), &src, &dst);
 }
 void RenderWindow::render1(Bigguy& p_guy){
@@ -124,7 +123,6 @@ void RenderWindow::render1(Bigguy& p_guy){
     dst.y = p_guy.Get_y();
     dst.w = p_guy.Get_CurrentFrame().w / 4;
     dst.h = p_guy.Get_CurrentFrame().h / 4;
-
     SDL_RenderCopy(renderer, p_guy.Get_tex(), &src, &dst);
     }
 void RenderWindow::display()
@@ -132,18 +130,4 @@ void RenderWindow::display()
     SDL_RenderPresent(renderer);
 }
 
-void RenderWindow::gameover(const char* p_filepath) {
-    SDL_Surface* gameover_Suf = IMG_Load(p_filepath);
-    if (!gameover_Suf) {
-        std::cout << "Unable to load gameover. Error: " << SDL_GetError() << std::endl;
-    }
 
-    SDL_Texture* gameover_Tex = NULL;
-    gameover_Tex = SDL_CreateTextureFromSurface(renderer, gameover_Suf);
-    if (gameover_Tex == NULL) {
-        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
-    }
-    SDL_FreeSurface(gameover_Suf);
-    SDL_RenderCopy(renderer, gameover_Tex, NULL, NULL);
-    SDL_DestroyTexture(gameover_Tex);
-}

@@ -18,7 +18,6 @@ public:
     void render(Entity& p_entity);
     void render1(Bigguy& p_guy);
     void display();
-    void gameover(const char* p_filepath);
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
