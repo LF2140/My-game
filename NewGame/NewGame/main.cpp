@@ -2,10 +2,12 @@
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
 #include "Bigguy.hpp"
+#include <vector>
+#include <ctime>
 
 using namespace std;
 
-const int WIDTH = 1280, HEIGHT = 720;
+const int WIDTH = 1920, HEIGHT = 1080;
 
 int main(int argc, char* args[])
 {
@@ -20,41 +22,51 @@ int main(int argc, char* args[])
 
 	RenderWindow window("Project A", WIDTH, HEIGHT);
 	
-	SDL_Texture* background = window.loadSurface("res/gfx/images.png");
+	SDL_Texture* background = window.loadSurface("res/gfx/BG.png");
 	SDL_Texture* BobTex = window.loadTexture("res/gfx/Bob.png");
 	SDL_Texture* BossTex = window.loadTexture("res/gfx/Boss.png");
+	SDL_Texture* BossTex1 = window.loadTexture("res/gfx/Boss1.png");
+	SDL_Texture* CrosshairTex = window.loadTexture("res/gfx/crosshair.png");
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
-	window.Bar_load("res/gfx/health_bar.png");
-	int type = 5;
+	
+	int mouse_x, mouse_y;
 
+	srand(time(0));
+	float speed = rand() % 10 + 5;
 	float e_x = 0;
 	float e_y = 0;
-	float save_e_x = e_x;
-	float save_e_y = e_y;
 	float delta_speed_x = 0;
 	float delta_speed_y = 0;
 	Entity Bob(e_x, e_y, BobTex);
 	Bob.Entity_run(WIDTH / 2, HEIGHT / 2, 5, &delta_speed_x, &delta_speed_y);
-	Bigguy Boss(WIDTH/2-110, HEIGHT/2-100, BossTex);
-
+	
+	window.Bar_load("res/gfx/health_bar.png");
+	int type = 5;
+	Bigguy Boss(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex);
+	Bigguy Boss1(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex1);
+	
 	bool gameRunning = true;
 	bool Bob_survive = true;
 	bool gameover = false;
+	bool Boss_turnred = false;
 	SDL_Event event;
 
 	while (gameRunning)
 	{
+			
 			while (SDL_PollEvent(&event))
 			{
 				if (event.type == SDL_QUIT)
 					gameRunning = false;
-				if (event.type == SDL_MOUSEBUTTONDOWN) {
-					e_x = save_e_x;
-					e_y = save_e_y;
-					Bob_survive = true;
-				}
 				if (gameover && event.type == SDL_MOUSEBUTTONDOWN) {
 					gameRunning = false;
+				}
+				if (event.button.button == SDL_BUTTON_LEFT && mouse_x >= Bob.Get_x()
+					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
+					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
+				{
+					cout << "KILL BOB\n";
+					Bob_survive = false;
 				}
 			}
 			if (!gameover) 
@@ -62,47 +74,93 @@ int main(int argc, char* args[])
 
 				window.clear();
 				window.renderBG(background);
+				
 
 				if (Bob_survive)
 				{
-					if (e_x < WIDTH / 2)
-						e_x += delta_speed_x;
-					else
-						e_x -= delta_speed_x;
-					if (e_y < HEIGHT / 2)
-						e_y += delta_speed_y;
-					else
-						e_y -= delta_speed_y;
-					Bob.Change_x(e_x);
-					Bob.Change_y(e_y);
+					float Bob_x = Bob.Get_x();
+					float Bob_y = Bob.Get_y();
+					Bob.Change_x(Bob_x+delta_speed_x);
+					Bob.Change_y(Bob_y+delta_speed_y);
 					window.render(Bob);
 				}
-				cout << (int)Bob.Get_x() << " " << WIDTH / 2 << " " << (int)Bob.Get_y() << " " << HEIGHT / 2 << endl;
+				else 
+				{
+					if (Boss_turnred) 
+					{
+						int timered = 500;
+						while (timered--)
+						{
+							window.render1(Boss1);
+							window.Bar_render(type);
+							//crosshair
+							{
+								int mouse_x, mouse_y;
+								Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+								cout << mouse_x << " " << mouse_y << endl;
+								window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
+
+							}
+						}
+						Boss_turnred = false;
+					}
+					//spawn another Bob
+					{
+						srand(time(0));
+						speed = rand() %10 + 5;
+						float e_x1 = rand() % 4000 ;
+						float e_y1 = rand() % 4000 ;
+						cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
+						Bob.Change_x(e_x1);
+						Bob.Change_y(e_y1);
+						Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
+						Bob_survive = true;
+						cout << "spawn new bob\n";
+					}
+					
+				}
+				if (type >= 0)
+				{
+					window.render1(Boss);
+				}
+
+				//cout << (int)Bob.Get_x() << " " << WIDTH / 2 << " " << (int)Bob.Get_y() << " " << HEIGHT / 2 << endl;
+				
 				if ( ( (int)Bob.Get_x() < 245/2 + (int)Boss.Get_x() ) && ( (int)Bob.Get_x() + 62/2 > (int)Boss.Get_x() )
 					&& ( (int)Bob.Get_y() < 245/2 + (int)Boss.Get_y() ) && ( (int)Bob.Get_y() + 62/2 > (int)Boss.Get_y() ) ) 
 				{
 					type--;
 					//cout << type << endl;
 					Bob_survive = false; 
-					Bob.Change_x(e_x + 500);
-					Bob.Change_y(e_y + 500);
+					Boss_turnred = true;
 				}
-				if (type >= 0)
+				
+				//crosshair
 				{
-					window.render1(Boss);
+					Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+					cout << mouse_x << " " << mouse_y << endl;
+					window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
+
 				}
+
+
 				window.Bar_render(type);
 				SDL_Delay(5);
+
 				if (type < 0)
 				{
 					gameover = true;
 				}
+
+
 			}
 			else {
 				window.renderBG(gameoverTex);
+
 			}
 			window.display();
 	}	
+		SDL_DestroyTexture(CrosshairTex);
 		window.cleanUp();
 	return 0;
 }

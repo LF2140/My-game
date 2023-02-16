@@ -32,10 +32,10 @@ void Entity::Change_y(float p_y) {
 }
 void Entity::Entity_run(float E_x0, float E_y0, float speed, float* delta_speed_x, float* delta_speed_y) 
 {
-	float delta_x = x - E_x0;
-	float delta_y = y - E_y0;
+	float delta_x = E_x0 - x;
+	float delta_y = E_y0 - y;
 	float delta_pos = sqrt(delta_x * delta_x + delta_y * delta_y);
 	float delta_time = delta_pos / speed;
-	*delta_speed_x = abs(delta_x) / delta_time;
-	*delta_speed_y = abs(delta_y) / delta_time;
+	*delta_speed_x = (delta_x) / delta_time;
+	*delta_speed_y = (delta_y) / delta_time;
 }

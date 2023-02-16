@@ -42,6 +42,16 @@ SDL_Texture* RenderWindow::loadSurface(const char* p_filepath)
     return backgroundTexture;
 }
 
+void RenderWindow::renderCrosshair(SDL_Texture* p_tex, int x, int y) 
+{
+    SDL_Rect dst;
+    dst.x = x - 50;
+    dst.y = y - 50;
+    dst.w = 100;
+    dst.h = 100;
+    SDL_RenderCopy(renderer, p_tex , NULL, &dst);
+}
+
 void RenderWindow::Bar_load(const char* p_filepath) {
     load_bar_surface = IMG_Load(p_filepath);
     if (!load_bar_surface) {
@@ -66,8 +76,8 @@ void RenderWindow::Bar_render(int type) {
 
     src.x = 0 * pieceWidth;
     src.y = type * pieceHeight;
-    dst.x = 490;
-    dst.y = 190;
+    dst.x = 812;
+    dst.y = 350;
     dst.w = width / 2;
     dst.h = height / 16;
     SDL_RenderCopy(renderer, load_bar_tex, &src, &dst);
@@ -90,8 +100,8 @@ void RenderWindow::renderBG(SDL_Texture* backgroundTex)
     SDL_Rect destRect;
     destRect.x = 0;
     destRect.y = 0;
-    destRect.w = 1280;
-    destRect.h = 720;
+    destRect.w = 1920;
+    destRect.h = 1080;
 
     SDL_RenderCopy(renderer, backgroundTex, NULL, &destRect);
 }
@@ -121,8 +131,8 @@ void RenderWindow::render1(Bigguy& p_guy){
     SDL_Rect dst;
     dst.x = p_guy.Get_x();
     dst.y = p_guy.Get_y();
-    dst.w = p_guy.Get_CurrentFrame().w / 4;
-    dst.h = p_guy.Get_CurrentFrame().h / 4;
+    dst.w = p_guy.Get_CurrentFrame().w / 6;
+    dst.h = p_guy.Get_CurrentFrame().h / 6;
     SDL_RenderCopy(renderer, p_guy.Get_tex(), &src, &dst);
     }
 void RenderWindow::display()
