@@ -82,12 +82,13 @@ void RenderWindow::Bar_render(int type) {
     dst.h = height / 16;
     SDL_RenderCopy(renderer, load_bar_tex, &src, &dst);
 
-    SDL_RenderPresent(renderer);
+    //SDL_RenderPresent(renderer);
 }
 
 void RenderWindow::cleanUp()
 {
     SDL_DestroyTexture(load_bar_tex);
+    SDL_DestroyTexture(load_P_P_tex);
     SDL_DestroyWindow(window);
 }
 void RenderWindow::clear()
@@ -104,6 +105,41 @@ void RenderWindow::renderBG(SDL_Texture* backgroundTex)
     destRect.h = 1080;
 
     SDL_RenderCopy(renderer, backgroundTex, NULL, &destRect);
+}
+
+void RenderWindow::P_PLoad(const char* p_filepath)
+{
+    load_P_P_surface = IMG_Load(p_filepath);
+    if (!load_P_P_surface) {
+        std::cout << "Unable to load Surface. Error: " << SDL_GetError() << std::endl;
+    }
+
+    load_P_P_tex = NULL;
+    load_P_P_tex = SDL_CreateTextureFromSurface(renderer, load_P_P_surface);
+    if (load_P_P_tex == NULL) {
+        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
+    }
+    SDL_FreeSurface(load_P_P_surface);
+}
+void RenderWindow::P_Prender(int mode)
+{
+    int width = load_P_P_surface->w;
+    int height = load_P_P_surface->h;
+    int pieceWidth = width/2;
+    int pieceHeight = height;
+
+    SDL_Rect src = { 0, 0, pieceWidth, pieceHeight };
+    SDL_Rect dst = { 0, 0, pieceWidth, pieceHeight };
+
+    src.x = mode * pieceWidth;
+    src.y = 0 * pieceHeight;
+    dst.x = 1650;
+    dst.y = 130;
+    dst.w = width/15;
+    dst.h = height/8;
+    SDL_RenderCopy(renderer, load_P_P_tex, &src, &dst);
+
+    SDL_RenderPresent(renderer);
 }
 
 void RenderWindow::render(Entity& p_entity)

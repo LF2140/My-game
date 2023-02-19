@@ -41,7 +41,10 @@ int main(int argc, char* args[])
 	Bob.Entity_run(WIDTH / 2, HEIGHT / 2, 5, &delta_speed_x, &delta_speed_y);
 	
 	window.Bar_load("res/gfx/health_bar.png");
+	window.P_PLoad("res/gfx/P_P.png");
+
 	int type = 5;
+	int mode = 1;
 	Bigguy Boss(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex);
 	Bigguy Boss1(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex1);
 	
@@ -49,6 +52,9 @@ int main(int argc, char* args[])
 	bool Bob_survive = true;
 	bool gameover = false;
 	bool Boss_turnred = false;
+	bool gamePause = false;
+	bool gamePlay = true;
+	Uint32 mouse_state;
 	SDL_Event event;
 
 	while (gameRunning)
@@ -61,27 +67,41 @@ int main(int argc, char* args[])
 				if (gameover && event.type == SDL_MOUSEBUTTONDOWN) {
 					gameRunning = false;
 				}
-				if (event.button.button == SDL_BUTTON_LEFT && mouse_x >= Bob.Get_x()
+				if (event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob.Get_x()
 					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
 					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
 				{
-					cout << "KILL BOB\n";
+					//cout << "KILL BOB\n";
 					Bob_survive = false;
 				}
+				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && !gamePause)
+				{
+					cout << "ESC " << endl;
+					mode = 0;
+					gamePause = true;
+				}
+				else if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && gamePause)
+				{
+					cout << "ESC " << endl;
+					mode = 1;
+					gamePause = false;
+				}
+				
 			}
-			if (!gameover) 
+			if (!gameover && gamePlay) 
 			{
 
 				window.clear();
 				window.renderBG(background);
-				
-
 				if (Bob_survive)
 				{
 					float Bob_x = Bob.Get_x();
 					float Bob_y = Bob.Get_y();
-					Bob.Change_x(Bob_x+delta_speed_x);
-					Bob.Change_y(Bob_y+delta_speed_y);
+					if (!gamePause)
+					{
+						Bob.Change_x(Bob_x + delta_speed_x);
+						Bob.Change_y(Bob_y + delta_speed_y);
+					}
 					window.render(Bob);
 				}
 				else 
@@ -91,16 +111,19 @@ int main(int argc, char* args[])
 						int timered = 500;
 						while (timered--)
 						{
-							window.render1(Boss1);
-							window.Bar_render(type);
-							//crosshair
 							{
-								int mouse_x, mouse_y;
-								Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+								window.clear();
+								window.renderBG(background);
+								while (SDL_PollEvent(&event))
+									mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
 								cout << mouse_x << " " << mouse_y << endl;
 								window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 							}
+							window.render1(Boss1);
+							window.Bar_render(type);
+							window.P_Prender(mode);
+							//crosshair
 						}
 						Boss_turnred = false;
 					}
@@ -109,13 +132,13 @@ int main(int argc, char* args[])
 						srand(time(0));
 						speed = rand() %10 + 5;
 						float e_x1 = rand() % 4000 ;
-						float e_y1 = rand() % 4000 ;
-						cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
-						Bob.Change_x(e_x1);
-						Bob.Change_y(e_y1);
-						Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
-						Bob_survive = true;
-						cout << "spawn new bob\n";
+						float e_y1 = rand() % 4000;
+							//cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
+							Bob.Change_x(e_x1);
+							Bob.Change_y(e_y1);
+							Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
+							Bob_survive = true;
+							//cout << "spawn new bob\n";
 					}
 					
 				}
@@ -137,14 +160,16 @@ int main(int argc, char* args[])
 				
 				//crosshair
 				{
-					Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
-					cout << mouse_x << " " << mouse_y << endl;
+					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+					//cout << mouse_x << " " << mouse_y << endl;
 					window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 				}
 
 
 				window.Bar_render(type);
+					window.P_Prender(mode);
+
 				SDL_Delay(5);
 
 				if (type < 0)

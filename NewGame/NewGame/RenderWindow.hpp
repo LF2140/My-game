@@ -16,6 +16,8 @@ public:
     void cleanUp();
     void clear();
     void renderBG(SDL_Texture* background);
+    void P_PLoad(const char* p_filepath);
+    void P_Prender(int mode);
     void render(Entity& p_entity);
     void render1(Bigguy& p_guy);
     void display();
@@ -25,4 +27,7 @@ private:
 
     SDL_Texture* load_bar_tex;
     SDL_Surface* load_bar_surface;
+
+    SDL_Texture* load_P_P_tex;
+    SDL_Surface* load_P_P_surface;
 };
