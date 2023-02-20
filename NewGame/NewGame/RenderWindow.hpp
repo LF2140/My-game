@@ -18,9 +18,12 @@ public:
     void renderBG(SDL_Texture* background);
     void P_PLoad(const char* p_filepath);
     void P_Prender(int mode);
+    void Retryload(const char* p_filepath);
+    void renderRetry(int mode);
     void render(Entity& p_entity);
     void render1(Bigguy& p_guy);
     void display();
+    SDL_Rect GetRetry();
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -30,4 +33,9 @@ private:
 
     SDL_Texture* load_P_P_tex;
     SDL_Surface* load_P_P_surface;
+
+    SDL_Texture* load_Retry_tex;
+    SDL_Surface* load_Retry_surface;
+
+    SDL_Rect Retry;
 };

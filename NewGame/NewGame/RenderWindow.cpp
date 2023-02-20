@@ -142,6 +142,45 @@ void RenderWindow::P_Prender(int mode)
     SDL_RenderPresent(renderer);
 }
 
+void RenderWindow::Retryload(const char* p_filepath)
+{
+    load_Retry_surface = IMG_Load(p_filepath);
+    if (!load_Retry_surface) {
+        std::cout << "Unable to load Surface. Error: " << SDL_GetError() << std::endl;
+    }
+
+    load_Retry_tex = NULL;
+    load_Retry_tex = SDL_CreateTextureFromSurface(renderer, load_Retry_surface);
+    if (load_Retry_tex == NULL) {
+        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
+    }
+    SDL_FreeSurface(load_Retry_surface);
+}
+void RenderWindow::renderRetry(int mode)
+{
+    int width = load_Retry_surface->w;
+    int height = load_Retry_surface->h;
+    int pieceWidth = width / 2;
+    int pieceHeight = height;
+
+    SDL_Rect src = { 0, 0, pieceWidth, pieceHeight };
+    SDL_Rect dst = { 0, 0, pieceWidth, pieceHeight };
+
+    src.x = mode * pieceWidth;
+    src.y = 0 * pieceHeight;
+    dst.x = 1920/2-97;
+    dst.y = 1080/2-79;
+    dst.w = width/13 ;
+    dst.h = height/6-25;
+    Retry.x = dst.x;
+    Retry.y = dst.y;
+    Retry.w = dst.w;
+    Retry.h = dst.h;
+    SDL_RenderCopy(renderer, load_Retry_tex, &src, &dst);
+
+    SDL_RenderPresent(renderer);
+}
+
 void RenderWindow::render(Entity& p_entity)
 {
     SDL_Rect src;
@@ -174,6 +213,10 @@ void RenderWindow::render1(Bigguy& p_guy){
 void RenderWindow::display()
 {
     SDL_RenderPresent(renderer);
+}
+SDL_Rect RenderWindow::GetRetry()
+{
+    return Retry;
 }
 
 

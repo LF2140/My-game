@@ -29,7 +29,7 @@ int main(int argc, char* args[])
 	SDL_Texture* CrosshairTex = window.loadTexture("res/gfx/crosshair.png");
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
-	int mouse_x, mouse_y;
+	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
 
 	srand(time(0));
 	float speed = rand() % 10 + 5;
@@ -42,9 +42,11 @@ int main(int argc, char* args[])
 	
 	window.Bar_load("res/gfx/health_bar.png");
 	window.P_PLoad("res/gfx/P_P.png");
+	window.Retryload("res/gfx/retry.png");
 
 	int type = 5;
 	int mode = 1;
+	int retry_type = 0;
 	Bigguy Boss(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex);
 	Bigguy Boss1(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex1);
 	
@@ -54,6 +56,7 @@ int main(int argc, char* args[])
 	bool Boss_turnred = false;
 	bool gamePause = false;
 	bool gamePlay = true;
+	bool retry = false;
 	Uint32 mouse_state;
 	SDL_Event event;
 
@@ -64,14 +67,11 @@ int main(int argc, char* args[])
 			{
 				if (event.type == SDL_QUIT)
 					gameRunning = false;
-				if (gameover && event.type == SDL_MOUSEBUTTONDOWN) {
-					gameRunning = false;
-				}
 				if (event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob.Get_x()
 					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
 					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
 				{
-					//cout << "KILL BOB\n";
+					cout << "KILL BOB\n";
 					Bob_survive = false;
 				}
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && !gamePause)
@@ -87,8 +87,28 @@ int main(int argc, char* args[])
 					gamePause = false;
 				}
 				
+				if (gameover)
+				{
+					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+					retry_x = mouse_x - window.GetRetry().x - window.GetRetry().w/2;
+					retry_y = mouse_y - window.GetRetry().y - window.GetRetry().h/2;
+					retry_h = window.GetRetry().h/2;
+					if (retry_x * retry_x + retry_y * retry_y < retry_h * retry_h)
+					{
+						retry_type = 1;
+						if (event.type == SDL_MOUSEBUTTONDOWN)
+						{
+							retry = false;
+							gameover = false;
+							type = 5;
+							Boss_turnred = false;
+							retry_type = 0;
+						}
+					}
+					else retry_type = 0;
+				}
 			}
-			if (!gameover && gamePlay) 
+			if (!gameover && gamePlay && !retry) 
 			{
 
 				window.clear();
@@ -108,20 +128,20 @@ int main(int argc, char* args[])
 				{
 					if (Boss_turnred) 
 					{
-						int timered = 500;
+						int timered = 300;
 						while (timered--)
 						{
+							window.clear();
+							window.renderBG(background);
+							window.render1(Boss1);
+							window.Bar_render(type);
 							{
-								window.clear();
-								window.renderBG(background);
 								while (SDL_PollEvent(&event))
 									mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
-								cout << mouse_x << " " << mouse_y << endl;
+								//cout << mouse_x << " " << mouse_y << endl;
 								window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 							}
-							window.render1(Boss1);
-							window.Bar_render(type);
 							window.P_Prender(mode);
 							//crosshair
 						}
@@ -158,6 +178,9 @@ int main(int argc, char* args[])
 					Boss_turnred = true;
 				}
 				
+
+
+				window.Bar_render(type);
 				//crosshair
 				{
 					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -165,23 +188,24 @@ int main(int argc, char* args[])
 					window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 				}
-
-
-				window.Bar_render(type);
-					window.P_Prender(mode);
+				window.P_Prender(mode);
 
 				SDL_Delay(5);
 
 				if (type < 0)
 				{
 					gameover = true;
+					retry = true;
 				}
 
 
 			}
 			else {
+				window.clear();
 				window.renderBG(gameoverTex);
-
+				window.renderRetry(retry_type);
+				cout << window.GetRetry().x << " " << window.GetRetry().y << " " << window.GetRetry().w << " " << window.GetRetry().h << endl;
+				cout << mouse_x << " " << mouse_y << endl;
 			}
 			window.display();
 	}	
