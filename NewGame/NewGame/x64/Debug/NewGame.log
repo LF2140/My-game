@@ -1,8 +1,8 @@
 ﻿  main.cpp
-E:\ProjectA\NewGame\NewGame\main.cpp(34,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-E:\ProjectA\NewGame\NewGame\main.cpp(35,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-E:\ProjectA\NewGame\NewGame\main.cpp(152,17): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-E:\ProjectA\NewGame\NewGame\main.cpp(153,26): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-E:\ProjectA\NewGame\NewGame\main.cpp(154,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-E:\ProjectA\NewGame\NewGame\main.cpp(155,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(38,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(39,14): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(191,17): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(192,26): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(193,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+E:\ProjectA\NewGame\NewGame\main.cpp(194,18): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   NewGame.vcxproj -> E:\ProjectA\NewGame\x64\Debug\NewGame.exe

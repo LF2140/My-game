@@ -22,6 +22,9 @@ int main(int argc, char* args[])
 
 	RenderWindow window("Project A", WIDTH, HEIGHT);
 	
+	SDL_Texture* beginTex = window.loadSurface("res/gfx/play.png");
+	SDL_Texture* selectTex = window.loadTexture("res/gfx/select.png");
+	SDL_Texture* pause = window.loadTexture("res/gfx/pause.png");
 	SDL_Texture* background = window.loadSurface("res/gfx/BG.png");
 	SDL_Texture* BobTex = window.loadTexture("res/gfx/Bob.png");
 	SDL_Texture* BossTex = window.loadTexture("res/gfx/Boss.png");
@@ -30,6 +33,7 @@ int main(int argc, char* args[])
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
 	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
+	int S_type = 3;
 
 	srand(time(0));
 	float speed = rand() % 10 + 5;
@@ -55,7 +59,7 @@ int main(int argc, char* args[])
 	bool gameover = false;
 	bool Boss_turnred = false;
 	bool gamePause = false;
-	bool gamePlay = true;
+	bool gamePlay = false;
 	bool retry = false;
 	Uint32 mouse_state;
 	SDL_Event event;
@@ -67,19 +71,21 @@ int main(int argc, char* args[])
 			{
 				if (event.type == SDL_QUIT)
 					gameRunning = false;
-				if (event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob.Get_x()
+				if (gamePlay && event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob.Get_x()
 					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
 					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
 				{
 					cout << "KILL BOB\n";
 					Bob_survive = false;
 				}
+
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && !gamePause)
 				{
 					cout << "ESC " << endl;
 					mode = 0;
 					gamePause = true;
 				}
+
 				else if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && gamePause)
 				{
 					cout << "ESC " << endl;
@@ -107,8 +113,40 @@ int main(int argc, char* args[])
 					}
 					else retry_type = 0;
 				}
+
+				if (!gamePlay)
+				{
+					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+					if (mouse_x >= 600 && mouse_x <= (600 + 730) && mouse_y >= 350 && mouse_y <= (350 + 330))
+					{
+						S_type = 1;
+						if (event.button.button == SDL_BUTTON_LEFT)
+						{
+							gamePlay = true;
+						}
+					}
+					else if (mouse_x >= 600 && mouse_x <= (600 + 730) && mouse_y >= 610 && mouse_y <= (610 + 330))
+					{
+						S_type = 2;
+						if (event.button.button == SDL_BUTTON_LEFT)
+						{
+							gameRunning = false;
+						}
+					}
+					else S_type = 3;
+					//gamePlay = true;
+				}
+
 			}
-			if (!gameover && gamePlay && !retry) 
+
+			if (!gamePlay && !gameover)
+			{
+					window.clear();
+					window.renderBG(beginTex);
+					if (S_type != 3)
+						window.RenderSelect(selectTex, S_type);
+			}
+			else if (!gameover && gamePlay && !retry) 
 			{
 
 				window.clear();
@@ -135,15 +173,16 @@ int main(int argc, char* args[])
 							window.renderBG(background);
 							window.render1(Boss1);
 							window.Bar_render(type);
+							//crosshair
 							{
 								while (SDL_PollEvent(&event))
 									mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
 								//cout << mouse_x << " " << mouse_y << endl;
+								if (!gamePause)
 								window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 							}
 							window.P_Prender(mode);
-							//crosshair
 						}
 						Boss_turnred = false;
 					}
@@ -185,8 +224,13 @@ int main(int argc, char* args[])
 				{
 					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
 					//cout << mouse_x << " " << mouse_y << endl;
-					window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
+					if (!gamePause)
+						window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
+				}
+				if (gamePause)
+				{
+					window.renderBG(pause);
 				}
 				window.P_Prender(mode);
 
@@ -200,7 +244,7 @@ int main(int argc, char* args[])
 
 
 			}
-			else {
+			else if ( gameover) {
 				window.clear();
 				window.renderBG(gameoverTex);
 				window.renderRetry(retry_type);

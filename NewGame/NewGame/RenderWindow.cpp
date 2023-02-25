@@ -51,6 +51,22 @@ void RenderWindow::renderCrosshair(SDL_Texture* p_tex, int x, int y)
     dst.h = 100;
     SDL_RenderCopy(renderer, p_tex , NULL, &dst);
 }
+void RenderWindow::RenderSelect(SDL_Texture* SelectTex, int S_type)
+{
+    SDL_Rect dst;
+    dst.x = 600;
+    if (S_type == 1)
+    {
+        dst.y = 350;
+    }
+    else if (S_type == 2)
+    {
+        dst.y = 610;
+    }
+    dst.w = 730;
+    dst.h = 330;
+    SDL_RenderCopy(renderer, SelectTex, NULL, &dst);
+}
 
 void RenderWindow::Bar_load(const char* p_filepath) {
     load_bar_surface = IMG_Load(p_filepath);
@@ -180,6 +196,7 @@ void RenderWindow::renderRetry(int mode)
 
     SDL_RenderPresent(renderer);
 }
+
 
 void RenderWindow::render(Entity& p_entity)
 {

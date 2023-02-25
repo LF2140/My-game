@@ -11,6 +11,7 @@ public:
     SDL_Texture* loadTexture(const char* p_filePath);
     SDL_Texture* loadSurface(const char* p_filepath);
     void renderCrosshair(SDL_Texture* p_Tex, int x, int y);
+    void RenderSelect(SDL_Texture* SelectTex, int S_type);
     void Bar_load(const char* p_filepath);
     void Bar_render(int type);
     void cleanUp();
