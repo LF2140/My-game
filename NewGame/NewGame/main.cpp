@@ -2,16 +2,32 @@
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
 #include "Bigguy.hpp"
+#include <SDL_mixer.h>
 #include <vector>
 #include <ctime>
 
 using namespace std;
 
+
+bool gameRunning = true;
+bool Bob_survive = true;
+bool gameover = false;
+bool Boss_turnred = false;
+bool gamePause = false;
+bool gamePlay = false;
+bool retry = false;
+bool Bob_deadth_sound = false;
+int type = 5;
+
 const int WIDTH = 1920, HEIGHT = 1080;
+int S_type = 3;
+
+int playMusic(void* arg);
+bool playmus = true;
 
 int main(int argc, char* args[])
 {
-	if (SDL_Init(SDL_INIT_VIDEO) > 0)
+	if (SDL_Init(SDL_INIT_VIDEO| SDL_INIT_AUDIO) > 0)
 	{
 		cout << "SDL_INIT has failed. Error: " << SDL_GetError() << endl;
 	}
@@ -19,9 +35,13 @@ int main(int argc, char* args[])
 	{
 		cout << "IMG_Init has failed. Error: " << SDL_GetError() << endl;
 	}
-
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		cout << "Failed to initialize SDL_mixer: " << Mix_GetError() << endl;
+	}
+	SDL_Thread* thread = SDL_CreateThread(playMusic, "PlayMusicThread", NULL);
 	RenderWindow window("Project A", WIDTH, HEIGHT);
-	
+
 	SDL_Texture* beginTex = window.loadSurface("res/gfx/play.png");
 	SDL_Texture* selectTex = window.loadTexture("res/gfx/select.png");
 	SDL_Texture* pause = window.loadTexture("res/gfx/pause.png");
@@ -33,7 +53,6 @@ int main(int argc, char* args[])
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
 	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
-	int S_type = 3;
 
 	srand(time(0));
 	float speed = rand() % 10 + 5;
@@ -48,25 +67,19 @@ int main(int argc, char* args[])
 	window.P_PLoad("res/gfx/P_P.png");
 	window.Retryload("res/gfx/retry.png");
 
-	int type = 5;
 	int mode = 1;
 	int retry_type = 0;
+	int check = 1;
+	int delayretry=1;
 	Bigguy Boss(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex);
 	Bigguy Boss1(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex1);
 	
-	bool gameRunning = true;
-	bool Bob_survive = true;
-	bool gameover = false;
-	bool Boss_turnred = false;
-	bool gamePause = false;
-	bool gamePlay = false;
-	bool retry = false;
+
 	Uint32 mouse_state;
 	SDL_Event event;
 
 	while (gameRunning)
 	{
-			
 			while (SDL_PollEvent(&event))
 			{
 				if (event.type == SDL_QUIT)
@@ -76,6 +89,7 @@ int main(int argc, char* args[])
 					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
 				{
 					cout << "KILL BOB\n";
+					Bob_deadth_sound = true;
 					Bob_survive = false;
 				}
 
@@ -99,19 +113,22 @@ int main(int argc, char* args[])
 					retry_x = mouse_x - window.GetRetry().x - window.GetRetry().w/2;
 					retry_y = mouse_y - window.GetRetry().y - window.GetRetry().h/2;
 					retry_h = window.GetRetry().h/2;
-					if (retry_x * retry_x + retry_y * retry_y < retry_h * retry_h)
+					if (!(delayretry))
 					{
-						retry_type = 1;
-						if (event.type == SDL_MOUSEBUTTONDOWN)
+						if (retry_x * retry_x + retry_y * retry_y < retry_h * retry_h)
 						{
-							retry = false;
-							gameover = false;
-							type = 5;
-							Boss_turnred = false;
-							retry_type = 0;
+							retry_type = 1;
+							if (event.type == SDL_MOUSEBUTTONDOWN)
+							{
+								retry = false;
+								gameover = false;
+								type = 5;
+								Boss_turnred = false;
+								retry_type = 0;
+							}
 						}
+						else retry_type = 0;
 					}
-					else retry_type = 0;
 				}
 
 				if (!gamePlay)
@@ -123,6 +140,8 @@ int main(int argc, char* args[])
 						if (event.button.button == SDL_BUTTON_LEFT)
 						{
 							gamePlay = true;
+							playmus = false;
+							continue;
 						}
 					}
 					else if (mouse_x >= 600 && mouse_x <= (600 + 730) && mouse_y >= 610 && mouse_y <= (610 + 330))
@@ -141,14 +160,19 @@ int main(int argc, char* args[])
 
 			if (!gamePlay && !gameover)
 			{
-					window.clear();
 					window.renderBG(beginTex);
-					if (S_type != 3)
+					if (S_type != 3) {
 						window.RenderSelect(selectTex, S_type);
+					}
 			}
 			else if (!gameover && gamePlay && !retry) 
 			{
-
+				if (check)
+				{
+					window.renderBG(beginTex);
+					SDL_Delay(2000);
+					check--;
+				}
 				window.clear();
 				window.renderBG(background);
 				if (Bob_survive)
@@ -169,7 +193,6 @@ int main(int argc, char* args[])
 						int timered = 300;
 						while (timered--)
 						{
-							window.clear();
 							window.renderBG(background);
 							window.render1(Boss1);
 							window.Bar_render(type);
@@ -197,6 +220,7 @@ int main(int argc, char* args[])
 							Bob.Change_y(e_y1);
 							Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
 							Bob_survive = true;
+							Bob_deadth_sound = false;
 							//cout << "spawn new bob\n";
 					}
 					
@@ -240,6 +264,8 @@ int main(int argc, char* args[])
 				{
 					gameover = true;
 					retry = true;
+					delayretry = 3500;
+					check = 1;
 				}
 
 
@@ -247,13 +273,69 @@ int main(int argc, char* args[])
 			else if ( gameover) {
 				window.clear();
 				window.renderBG(gameoverTex);
-				window.renderRetry(retry_type);
-				cout << window.GetRetry().x << " " << window.GetRetry().y << " " << window.GetRetry().w << " " << window.GetRetry().h << endl;
-				cout << mouse_x << " " << mouse_y << endl;
+				if (!delayretry)
+					window.renderRetry(retry_type);
+				else delayretry--;
+				//cout << window.GetRetry().x << " " << window.GetRetry().y << " " << window.GetRetry().w << " " << window.GetRetry().h << endl;
+				//cout << mouse_x << " " << mouse_y << endl;
 			}
+
 			window.display();
 	}	
 		SDL_DestroyTexture(CrosshairTex);
+		SDL_WaitThread(thread, NULL);
+		Mix_HaltMusic();
+		Mix_CloseAudio();
 		window.cleanUp();
+	return 0;
+}
+
+int playMusic(void* arg)
+{
+	Mix_Music* music = Mix_LoadMUS("res/sound/gamePlay.mp3");
+	Mix_Music* select = Mix_LoadMUS("res/sound/select.mp3");
+	Mix_Music* over = Mix_LoadMUS("res/sound/gameover.mp3");
+	Mix_Music* bobdeath = Mix_LoadMUS("res/sound/bobdeath.mp3");
+	// check if the music file was loaded successfully
+	while(gameRunning)
+	{
+		if (!gamePlay)
+		{
+			Mix_PlayMusic(music, -1);
+
+			while (Mix_PlayingMusic())
+			{
+				if (!playmus || !gameRunning)
+				{
+					break;
+				}
+			}
+
+			Mix_PlayMusic(select, 1);
+
+			if (S_type == 1)
+			{
+				Mix_PlayingMusic();
+			}
+		}
+		else if (gameover)
+		{
+			Mix_PlayMusic(over, -1);
+
+			while (Mix_PlayingMusic())
+			{
+				if (!retry)
+				{
+					break;
+				}
+			}
+			Mix_PlayMusic(select, 1);
+		}
+		else if (Bob_deadth_sound && !retry)
+		{
+			Mix_PlayMusic(bobdeath, 1);
+
+		}
+	}
 	return 0;
 }

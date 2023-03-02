@@ -1,5 +1,6 @@
 #include<SDL.h>
 #include<SDL_image.h>
+#include <SDL_mixer.h>
 #include "RenderWindow.hpp"
 #include<iostream>
 #include "Entity.hpp"
@@ -9,12 +10,14 @@ RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
     :window(NULL), renderer(NULL)
 {
     window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN);
+
     if (window == NULL)
     {
         std::cout << "Window failed to init. Error: " << SDL_GetError() << std::endl;
     }
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
+
 
 SDL_Texture* RenderWindow::loadTexture(const char* p_filePath)
 {
@@ -197,7 +200,6 @@ void RenderWindow::renderRetry(int mode)
     SDL_RenderPresent(renderer);
 }
 
-
 void RenderWindow::render(Entity& p_entity)
 {
     SDL_Rect src;
@@ -223,8 +225,8 @@ void RenderWindow::render1(Bigguy& p_guy){
     SDL_Rect dst;
     dst.x = p_guy.Get_x();
     dst.y = p_guy.Get_y();
-    dst.w = p_guy.Get_CurrentFrame().w / 6;
-    dst.h = p_guy.Get_CurrentFrame().h / 6;
+    dst.w = p_guy.Get_CurrentFrame().w / 8;
+    dst.h = p_guy.Get_CurrentFrame().h / 8;
     SDL_RenderCopy(renderer, p_guy.Get_tex(), &src, &dst);
     }
 void RenderWindow::display()
