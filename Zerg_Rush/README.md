@@ -11,8 +11,3 @@ Run in terminal
 mingw32-make
 ./Zerg_Rush.exe
 ```
-
-
-## Devision of work: <br />
-create full game and find sound src: Layout <br/>
-image src: Layout, Phạm Thị Tố Tâm <br/>
