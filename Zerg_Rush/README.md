@@ -9,7 +9,7 @@ Run in terminal
 
 ```sh
 mingw32-make
-Zerg_Rush.exe
+./Zerg_Rush.exe
 ```
 
 
