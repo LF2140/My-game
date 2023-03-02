@@ -14,6 +14,5 @@ mingw32-make
 
 
 ## Devision of work: <br />
-create full game: Layout <br/>
-sound src: youtube.com, pixabay.com. <br/>
-image src: google.com, Phạm Thị Tố Tâm <br/>
+create full game and find sound src: Layout <br/>
+image src: Layout, Phạm Thị Tố Tâm <br/>
