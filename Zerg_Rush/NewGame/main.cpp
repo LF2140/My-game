@@ -18,6 +18,9 @@ bool gamePlay = false;
 bool retry = false;
 bool Bob_deadth_sound = false;
 int type = 5;
+int score = 0;
+int bonus_speed = 0;
+int Boss_health = 50;
 
 const int WIDTH = 1920, HEIGHT = 1080;
 int S_type = 3;
@@ -38,6 +41,9 @@ int main(int argc, char* args[])
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
 	{
 		cout << "Failed to initialize SDL_mixer: " << Mix_GetError() << endl;
+	}
+	if (TTF_Init() < 0) {
+		cout << "Failed to initialize SDL_ttf: " << Mix_GetError() << endl;
 	}
 	SDL_Thread* thread = SDL_CreateThread(playMusic, "PlayMusicThread", NULL);
 	RenderWindow window("Project A", WIDTH, HEIGHT);
@@ -66,6 +72,7 @@ int main(int argc, char* args[])
 	window.Bar_load("res/gfx/health_bar.png");
 	window.P_PLoad("res/gfx/P_P.png");
 	window.Retryload("res/gfx/retry.png");
+	window.ScoreLoad("res/font/lucon.ttf");
 
 	int mode = 1;
 	int retry_type = 0;
@@ -91,6 +98,32 @@ int main(int argc, char* args[])
 					cout << "KILL BOB\n";
 					Bob_deadth_sound = true;
 					Bob_survive = false;
+					score += 50;
+					switch (score)
+					{
+						case 100:
+						{
+							bonus_speed = 1;
+							break;
+						}
+						case 300:
+						{
+							bonus_speed = 2;
+							break;
+						}
+						case 750:
+						{
+							bonus_speed = 3;
+						}
+						case 1000:
+						{
+							bonus_speed = 4;
+						}
+						case 5000:
+						{
+							bonus_speed = 5;
+						}
+					}
 				}
 
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && !gamePause)
@@ -193,6 +226,7 @@ int main(int argc, char* args[])
 						int timered = 300;
 						while (timered--)
 						{
+							window.clear();
 							window.renderBG(background);
 							window.render1(Boss1);
 							window.Bar_render(type);
@@ -206,14 +240,16 @@ int main(int argc, char* args[])
 
 							}
 							window.P_Prender(mode);
+							window.ScoreRender(score);
+							window.display();
 						}
 						Boss_turnred = false;
 					}
 					//spawn another Bob
 					{
 						srand(time(0));
-						speed = rand() %10 + 5;
-						float e_x1 = rand() % 4000 ;
+						speed = 5 + bonus_speed;
+						float e_x1 = rand() % 4000;
 						float e_y1 = rand() % 4000;
 							//cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
 							Bob.Change_x(e_x1);
@@ -256,7 +292,9 @@ int main(int argc, char* args[])
 				{
 					window.renderBG(pause);
 				}
+				window.ScoreRender(score);
 				window.P_Prender(mode);
+				window.display();
 
 				SDL_Delay(5);
 
@@ -266,6 +304,7 @@ int main(int argc, char* args[])
 					retry = true;
 					delayretry = 3500;
 					check = 1;
+					score = 0;
 				}
 
 

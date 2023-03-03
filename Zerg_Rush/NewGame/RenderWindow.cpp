@@ -1,13 +1,14 @@
 #include<SDL.h>
 #include<SDL_image.h>
-#include <SDL_mixer.h>
+#include<SDL_ttf.h>
 #include "RenderWindow.hpp"
 #include<iostream>
+#include<string>
 #include "Entity.hpp"
 #include "Bigguy.hpp"
 
 RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h)
-    :window(NULL), renderer(NULL)
+    :window(NULL), renderer(NULL), font(NULL)
 {
     window = SDL_CreateWindow(p_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, p_w, p_h, SDL_WINDOW_SHOWN);
 
@@ -53,6 +54,7 @@ void RenderWindow::renderCrosshair(SDL_Texture* p_tex, int x, int y)
     dst.w = 100;
     dst.h = 100;
     SDL_RenderCopy(renderer, p_tex , NULL, &dst);
+    //SDL_RenderPresent(renderer);
 }
 void RenderWindow::RenderSelect(SDL_Texture* SelectTex, int S_type)
 {
@@ -106,8 +108,11 @@ void RenderWindow::Bar_render(int type) {
 
 void RenderWindow::cleanUp()
 {
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyTexture(load_bar_tex);
     SDL_DestroyTexture(load_P_P_tex);
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
 void RenderWindow::clear()
@@ -158,7 +163,7 @@ void RenderWindow::P_Prender(int mode)
     dst.h = height/8;
     SDL_RenderCopy(renderer, load_P_P_tex, &src, &dst);
 
-    SDL_RenderPresent(renderer);
+    //SDL_RenderPresent(renderer);
 }
 
 void RenderWindow::Retryload(const char* p_filepath)
@@ -198,6 +203,28 @@ void RenderWindow::renderRetry(int mode)
     SDL_RenderCopy(renderer, load_Retry_tex, &src, &dst);
 
     SDL_RenderPresent(renderer);
+}
+
+void RenderWindow::ScoreLoad(const char* p_tffpath)
+{
+    font = TTF_OpenFont(p_tffpath, 25);
+    if (font == NULL)
+    {
+        std::cout << "can load font error: " << SDL_GetError() << std::endl;
+    }
+}
+void RenderWindow::ScoreRender(int score)
+{
+    std::string scoreStr = "Score: " + std::to_string(score);
+    SDL_Color textColor = { 255, 255, 255 };
+    SDL_Surface* scoreSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), textColor);
+    SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+    SDL_Rect scoreRect = { 200, 130, scoreSurface->w, scoreSurface->h };
+
+    SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
+    SDL_DestroyTexture(scoreTexture);
+    SDL_FreeSurface(scoreSurface);
+    //SDL_RenderPresent(renderer);
 }
 
 void RenderWindow::render(Entity& p_entity)

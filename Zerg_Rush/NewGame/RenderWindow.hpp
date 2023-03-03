@@ -1,6 +1,7 @@
 #pragma once
 #include<SDL.h>
 #include<SDL_image.h>
+#include<SDL_ttf.h>
 
 #include "Entity.hpp"
 #include "Bigguy.hpp"
@@ -21,6 +22,8 @@ public:
     void P_Prender(int mode);
     void Retryload(const char* p_filepath);
     void renderRetry(int mode);
+    void ScoreLoad(const char* p_tffpath);
+    void ScoreRender(int score);
     void render(Entity& p_entity);
     void render1(Bigguy& p_guy);
     void display();
@@ -39,4 +42,6 @@ private:
     SDL_Surface* load_Retry_surface;
 
     SDL_Rect Retry;
+
+    TTF_Font* font;
 };
