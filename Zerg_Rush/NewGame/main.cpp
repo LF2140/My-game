@@ -21,6 +21,7 @@ int type = 5;
 int score = 0;
 int bonus_speed = 0;
 int Boss_health = 50;
+int timered = 300;
 
 const int WIDTH = 1920, HEIGHT = 1080;
 int S_type = 3;
@@ -58,6 +59,8 @@ int main(int argc, char* args[])
 	SDL_Texture* CrosshairTex = window.loadTexture("res/gfx/crosshair.png");
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
+	Mix_Chunk* damage_sound = Mix_LoadWAV("res/sound/damage.mp3");
+
 	//play-pause 
 	vector<SDL_Texture*> P_P_tex;
 	P_P_tex.push_back( window.loadTexture("res/gfx/P1.png") );
@@ -237,7 +240,8 @@ int main(int argc, char* args[])
 				{
 					if (Boss_turnred) 
 					{
-						int timered = 300;
+						Mix_PlayChannel(2, damage_sound, 0);
+						timered = 300;
 						window.clear();
 						while (timered--)
 						{
@@ -333,6 +337,7 @@ int main(int argc, char* args[])
 
 			window.display();
 	}	
+		Mix_FreeChunk(damage_sound);
 		SDL_DestroyTexture(CrosshairTex);
 		SDL_WaitThread(thread, NULL);
 		Mix_HaltMusic();
@@ -346,7 +351,8 @@ int playMusic(void* arg)
 	Mix_Music* music = Mix_LoadMUS("res/sound/gamePlay.mp3");
 	Mix_Music* select = Mix_LoadMUS("res/sound/select.mp3");
 	Mix_Music* over = Mix_LoadMUS("res/sound/gameover.mp3");
-	Mix_Music* bobdeath = Mix_LoadMUS("res/sound/bobdeath.mp3");
+	Mix_Chunk* bob_death_sound = Mix_LoadWAV("res/sound/bobdeath.mp3");
+	Mix_Chunk* background_music = Mix_LoadWAV("res/sound/background_music.mp3");
 	while(gameRunning)
 	{
 		if (!gamePlay)
@@ -381,11 +387,30 @@ int playMusic(void* arg)
 			}
 			Mix_PlayMusic(select, 1);
 		}
-		else if (Bob_deadth_sound && !retry)
-		{
-			Mix_PlayMusic(bobdeath, 1);
-
+		else if (!gameover && gamePlay && !retry)
+		{	
+			Mix_PlayChannel(0, background_music, 0);
+			while (Mix_Playing(0))
+			{
+				if (type<0)
+				{
+					Mix_HaltChannel(0);
+					break;
+				}
+				if (gamePause)
+				{
+					Mix_Pause(0);
+				}
+				else
+				{
+					Mix_Resume(0);
+				}
+				if (Bob_deadth_sound)
+					Mix_PlayChannel(1, bob_death_sound, 0);
+			}
 		}
 	}
+	Mix_FreeChunk(bob_death_sound);
+	Mix_FreeChunk(background_music);
 	return 0;
 }
