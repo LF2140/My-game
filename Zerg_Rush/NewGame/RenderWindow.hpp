@@ -13,15 +13,12 @@ public:
     SDL_Texture* loadSurface(const char* p_filepath);
     void renderCrosshair(SDL_Texture* p_Tex, int x, int y);
     void RenderSelect(SDL_Texture* SelectTex, int S_type);
-    void Bar_load(const char* p_filepath);
-    void Bar_render(int type);
+    void P_Prender(SDL_Texture* p_tex);
+    void renderRetry(SDL_Texture* p_tex);
+    void Bar_render(SDL_Texture* p_tex);
     void cleanUp();
     void clear();
     void renderBG(SDL_Texture* background);
-    void P_PLoad(const char* p_filepath);
-    void P_Prender(int mode);
-    void Retryload(const char* p_filepath);
-    void renderRetry(int mode);
     void ScoreLoad(const char* p_tffpath);
     void ScoreRender(int score);
     void render(Entity& p_entity);
@@ -31,15 +28,6 @@ public:
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
-
-    SDL_Texture* load_bar_tex;
-    SDL_Surface* load_bar_surface;
-
-    SDL_Texture* load_P_P_tex;
-    SDL_Surface* load_P_P_surface;
-
-    SDL_Texture* load_Retry_tex;
-    SDL_Surface* load_Retry_surface;
 
     SDL_Rect Retry;
 

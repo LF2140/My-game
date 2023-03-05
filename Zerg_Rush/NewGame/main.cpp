@@ -3,8 +3,8 @@
 #include "Entity.hpp"
 #include "Bigguy.hpp"
 #include <SDL_mixer.h>
-#include <vector>
 #include <ctime>
+#include <vector>
 
 using namespace std;
 
@@ -58,6 +58,23 @@ int main(int argc, char* args[])
 	SDL_Texture* CrosshairTex = window.loadTexture("res/gfx/crosshair.png");
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
+	//play-pause 
+	vector<SDL_Texture*> P_P_tex;
+	P_P_tex.push_back( window.loadTexture("res/gfx/P1.png") );
+	P_P_tex.push_back( window.loadTexture("res/gfx/P2.png") );
+	//Health bar
+	vector <SDL_Texture*> Health_tex;
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_1.png") );
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_2.png") );
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_3.png") );
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_4.png") );
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_5.png") );
+	Health_tex.push_back( window.loadTexture("res/gfx/Health_bar_6.png") );
+	//retry button
+	vector <SDL_Texture*> Retry_tex;
+	Retry_tex.push_back( window.loadTexture("res/gfx/retry1.png") );
+	Retry_tex.push_back( window.loadTexture("res/gfx/retry2.png") );
+
 	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
 
 	srand(time(0));
@@ -69,9 +86,6 @@ int main(int argc, char* args[])
 	Entity Bob(e_x, e_y, BobTex);
 	Bob.Entity_run(WIDTH / 2, HEIGHT / 2, 5, &delta_speed_x, &delta_speed_y);
 	
-	window.Bar_load("res/gfx/health_bar.png");
-	window.P_PLoad("res/gfx/P_P.png");
-	window.Retryload("res/gfx/retry.png");
 	window.ScoreLoad("res/font/lucon.ttf");
 
 	int mode = 1;
@@ -224,12 +238,12 @@ int main(int argc, char* args[])
 					if (Boss_turnred) 
 					{
 						int timered = 300;
+						window.clear();
 						while (timered--)
 						{
-							window.clear();
 							window.renderBG(background);
 							window.render1(Boss1);
-							window.Bar_render(type);
+							window.Bar_render(Health_tex[type]);
 							//crosshair
 							{
 								while (SDL_PollEvent(&event))
@@ -239,7 +253,7 @@ int main(int argc, char* args[])
 								window.renderCrosshair(CrosshairTex, mouse_x, mouse_y);
 
 							}
-							window.P_Prender(mode);
+							window.P_Prender(P_P_tex[mode]);
 							window.ScoreRender(score);
 							window.display();
 						}
@@ -267,6 +281,7 @@ int main(int argc, char* args[])
 				}
 
 				//cout << (int)Bob.Get_x() << " " << WIDTH / 2 << " " << (int)Bob.Get_y() << " " << HEIGHT / 2 << endl;
+				window.Bar_render(Health_tex[type]);
 				
 				if ( ( (int)Bob.Get_x() < 245/2 + (int)Boss.Get_x() ) && ( (int)Bob.Get_x() + 62/2 > (int)Boss.Get_x() )
 					&& ( (int)Bob.Get_y() < 245/2 + (int)Boss.Get_y() ) && ( (int)Bob.Get_y() + 62/2 > (int)Boss.Get_y() ) ) 
@@ -279,7 +294,6 @@ int main(int argc, char* args[])
 				
 
 
-				window.Bar_render(type);
 				//crosshair
 				{
 					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -292,17 +306,15 @@ int main(int argc, char* args[])
 				{
 					window.renderBG(pause);
 				}
+				window.P_Prender(P_P_tex[mode]);
 				window.ScoreRender(score);
-				window.P_Prender(mode);
-				window.display();
-
 				SDL_Delay(5);
-
+				window.display();
 				if (type < 0)
 				{
 					gameover = true;
 					retry = true;
-					delayretry = 3500;
+					delayretry = 3250;
 					check = 1;
 					score = 0;
 				}
@@ -313,7 +325,7 @@ int main(int argc, char* args[])
 				window.clear();
 				window.renderBG(gameoverTex);
 				if (!delayretry)
-					window.renderRetry(retry_type);
+					window.renderRetry(Retry_tex[retry_type]);
 				else delayretry--;
 				//cout << window.GetRetry().x << " " << window.GetRetry().y << " " << window.GetRetry().w << " " << window.GetRetry().h << endl;
 				//cout << mouse_x << " " << mouse_y << endl;
@@ -335,7 +347,6 @@ int playMusic(void* arg)
 	Mix_Music* select = Mix_LoadMUS("res/sound/select.mp3");
 	Mix_Music* over = Mix_LoadMUS("res/sound/gameover.mp3");
 	Mix_Music* bobdeath = Mix_LoadMUS("res/sound/bobdeath.mp3");
-	// check if the music file was loaded successfully
 	while(gameRunning)
 	{
 		if (!gamePlay)

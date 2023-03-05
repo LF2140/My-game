@@ -73,35 +73,42 @@ void RenderWindow::RenderSelect(SDL_Texture* SelectTex, int S_type)
     SDL_RenderCopy(renderer, SelectTex, NULL, &dst);
 }
 
-void RenderWindow::Bar_load(const char* p_filepath) {
-    load_bar_surface = IMG_Load(p_filepath);
-    if (!load_bar_surface) {
-        std::cout << "Unable to load Surface. Error: " << SDL_GetError() << std::endl;
-    }
+void RenderWindow::P_Prender(SDL_Texture* p_tex)
+{;
+    SDL_Rect dst;
+    dst.x = 1650;
+    dst.y = 130;
+    dst.w = 428/7;
+    dst.h = 438/7;
+    SDL_RenderCopy(renderer, p_tex, NULL, &dst);
 
-    load_bar_tex = NULL;
-    load_bar_tex = SDL_CreateTextureFromSurface(renderer, load_bar_surface);
-    if (load_bar_tex == NULL) {
-        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
-    }
-    SDL_FreeSurface(load_bar_surface);
+    //SDL_RenderPresent(renderer);
 }
-void RenderWindow::Bar_render(int type) {
-    int width = load_bar_surface->w;
-    int height = load_bar_surface->h;
-    int pieceWidth = width;
-    int pieceHeight = height / 6;
 
-    SDL_Rect src = { 0, 0, pieceWidth, pieceHeight };
-    SDL_Rect dst = { 0, 0, pieceWidth, pieceHeight };
+void RenderWindow::renderRetry(SDL_Texture* p_tex)
+{
+    SDL_Rect dst;
+    dst.x = 1920/2-97;
+    dst.y = 1080/2-79;
+    dst.w = 195;
+    dst.h = 187;
+    Retry.x = dst.x;
+    Retry.y = dst.y;
+    Retry.w = dst.w;
+    Retry.h = dst.h;
+    SDL_RenderCopy(renderer, p_tex, NULL, &dst);
 
-    src.x = 0 * pieceWidth;
-    src.y = type * pieceHeight;
+    SDL_RenderPresent(renderer);
+}
+
+void RenderWindow::Bar_render(SDL_Texture* p_tex)
+{
+    SDL_Rect dst;
     dst.x = 812;
     dst.y = 350;
-    dst.w = width / 2;
-    dst.h = height / 16;
-    SDL_RenderCopy(renderer, load_bar_tex, &src, &dst);
+    dst.w = 629/2 - 12 ;
+    dst.h = 148/2 - 12 ;
+    SDL_RenderCopy(renderer, p_tex, NULL, &dst);
 
     //SDL_RenderPresent(renderer);
 }
@@ -110,8 +117,6 @@ void RenderWindow::cleanUp()
 {
     TTF_CloseFont(font);
     TTF_Quit();
-    SDL_DestroyTexture(load_bar_tex);
-    SDL_DestroyTexture(load_P_P_tex);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
@@ -131,79 +136,6 @@ void RenderWindow::renderBG(SDL_Texture* backgroundTex)
     SDL_RenderCopy(renderer, backgroundTex, NULL, &destRect);
 }
 
-void RenderWindow::P_PLoad(const char* p_filepath)
-{
-    load_P_P_surface = IMG_Load(p_filepath);
-    if (!load_P_P_surface) {
-        std::cout << "Unable to load Surface. Error: " << SDL_GetError() << std::endl;
-    }
-
-    load_P_P_tex = NULL;
-    load_P_P_tex = SDL_CreateTextureFromSurface(renderer, load_P_P_surface);
-    if (load_P_P_tex == NULL) {
-        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
-    }
-    SDL_FreeSurface(load_P_P_surface);
-}
-void RenderWindow::P_Prender(int mode)
-{
-    int width = load_P_P_surface->w;
-    int height = load_P_P_surface->h;
-    int pieceWidth = width/2;
-    int pieceHeight = height;
-
-    SDL_Rect src = { 0, 0, pieceWidth, pieceHeight };
-    SDL_Rect dst = { 0, 0, pieceWidth, pieceHeight };
-
-    src.x = mode * pieceWidth;
-    src.y = 0 * pieceHeight;
-    dst.x = 1650;
-    dst.y = 130;
-    dst.w = width/15;
-    dst.h = height/8;
-    SDL_RenderCopy(renderer, load_P_P_tex, &src, &dst);
-
-    //SDL_RenderPresent(renderer);
-}
-
-void RenderWindow::Retryload(const char* p_filepath)
-{
-    load_Retry_surface = IMG_Load(p_filepath);
-    if (!load_Retry_surface) {
-        std::cout << "Unable to load Surface. Error: " << SDL_GetError() << std::endl;
-    }
-
-    load_Retry_tex = NULL;
-    load_Retry_tex = SDL_CreateTextureFromSurface(renderer, load_Retry_surface);
-    if (load_Retry_tex == NULL) {
-        std::cout << "Unable to load background. Error: " << SDL_GetError() << std::endl;
-    }
-    SDL_FreeSurface(load_Retry_surface);
-}
-void RenderWindow::renderRetry(int mode)
-{
-    int width = load_Retry_surface->w;
-    int height = load_Retry_surface->h;
-    int pieceWidth = width / 2;
-    int pieceHeight = height;
-
-    SDL_Rect src = { 0, 0, pieceWidth, pieceHeight };
-    SDL_Rect dst = { 0, 0, pieceWidth, pieceHeight };
-
-    src.x = mode * pieceWidth;
-    src.y = 0 * pieceHeight;
-    dst.x = 1920/2-97;
-    dst.y = 1080/2-79;
-    dst.w = width/13 ;
-    dst.h = height/6-25;
-    Retry.x = dst.x;
-    Retry.y = dst.y;
-    Retry.w = dst.w;
-    Retry.h = dst.h;
-    SDL_RenderCopy(renderer, load_Retry_tex, &src, &dst);
-
-    SDL_RenderPresent(renderer);
-}
 
 void RenderWindow::ScoreLoad(const char* p_tffpath)
 {
