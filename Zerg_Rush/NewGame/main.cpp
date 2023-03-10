@@ -17,11 +17,15 @@ bool gamePause = false;
 bool gamePlay = false;
 bool retry = false;
 bool Bob_deadth_sound = false;
+bool can_inc_score = true;
 int type = 5;
 int score = 0;
 int bonus_speed = 0;
 int Boss_health = 50;
 int timered = 300;
+int high_score = 0;
+int retry_delay = 0;
+
 
 const int WIDTH = 1920, HEIGHT = 1080;
 int S_type = 3;
@@ -60,6 +64,7 @@ int main(int argc, char* args[])
 	SDL_Texture* gameoverTex = window.loadSurface("res/gfx/gameover.png");
 	
 	Mix_Chunk* damage_sound = Mix_LoadWAV("res/sound/damage.mp3");
+	Mix_Chunk* bob_death_sound = Mix_LoadWAV("res/sound/bobdeath.mp3");
 
 	//play-pause 
 	vector<SDL_Texture*> P_P_tex;
@@ -80,8 +85,8 @@ int main(int argc, char* args[])
 
 	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
 
-	srand(time(0));
-	float speed = rand() % 10 + 5;
+	srand(time(NULL));
+	float speed = 0;
 	float e_x = 0;
 	float e_y = 0;
 	float delta_speed_x = 0;
@@ -94,7 +99,6 @@ int main(int argc, char* args[])
 	int mode = 1;
 	int retry_type = 0;
 	int check = 1;
-	int delayretry=1;
 	Bigguy Boss(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex);
 	Bigguy Boss1(WIDTH/2 - 70, HEIGHT/2 - 70, BossTex1);
 	
@@ -112,34 +116,42 @@ int main(int argc, char* args[])
 					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
 					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
 				{
-					cout << "KILL BOB\n";
-					Bob_deadth_sound = true;
+					//cout << "KILL BOB\n"
+					if (!Boss_turnred)
+						Mix_PlayChannel(1, bob_death_sound, 0);
 					Bob_survive = false;
-					score += 50;
+					if (can_inc_score && !Boss_turnred)
+					{
+						score += 50;
+						can_inc_score = false;
+					}
 					switch (score)
 					{
-						case 100:
-						{
-							bonus_speed = 1;
-							break;
-						}
-						case 300:
-						{
-							bonus_speed = 2;
-							break;
-						}
-						case 750:
-						{
-							bonus_speed = 3;
-						}
-						case 1000:
-						{
-							bonus_speed = 4;
-						}
-						case 5000:
-						{
-							bonus_speed = 5;
-						}
+					case 100:
+					{
+						bonus_speed = 1;
+						break;
+					}
+					case 300:
+					{
+						bonus_speed = 2;
+						break;
+					}
+					case 750:
+					{
+						bonus_speed = 3;
+						break;
+					}
+					case 1000:
+					{
+						bonus_speed = 4;
+						break;
+					}
+					case 5000:
+					{
+						bonus_speed = 5;
+						break;
+					}
 					}
 				}
 
@@ -162,13 +174,11 @@ int main(int argc, char* args[])
 					mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
 					retry_x = mouse_x - window.GetRetry().x - window.GetRetry().w/2;
 					retry_y = mouse_y - window.GetRetry().y - window.GetRetry().h/2;
-					retry_h = window.GetRetry().h/2;
-					if (!(delayretry))
-					{
+					retry_h = window.GetRetry().h/2;	
 						if (retry_x * retry_x + retry_y * retry_y < retry_h * retry_h)
 						{
 							retry_type = 1;
-							if (event.type == SDL_MOUSEBUTTONDOWN)
+							if (event.type == SDL_MOUSEBUTTONDOWN && retry_delay == 0 )
 							{
 								retry = false;
 								gameover = false;
@@ -178,7 +188,6 @@ int main(int argc, char* args[])
 							}
 						}
 						else retry_type = 0;
-					}
 				}
 
 				if (!gamePlay)
@@ -258,23 +267,26 @@ int main(int argc, char* args[])
 
 							}
 							window.P_Prender(P_P_tex[mode]);
-							window.ScoreRender(score);
+							window.ScoreRender(score,1);
 							window.display();
 						}
 						Boss_turnred = false;
 					}
 					//spawn another Bob
 					{
-						srand(time(0));
 						speed = 5 + bonus_speed;
-						float e_x1 = rand() % 4000;
-						float e_y1 = rand() % 4000;
+						float e_x1 = rand() % 4000-200;
+						float e_y1 = rand() % 4000-200;
 							//cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
+						if ((e_x1-WIDTH/2)*(e_x1-WIDTH/2) + (e_y1-HEIGHT/2)*(e_y1-HEIGHT/2)>=500*500)
+						{
 							Bob.Change_x(e_x1);
 							Bob.Change_y(e_y1);
 							Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
 							Bob_survive = true;
 							Bob_deadth_sound = false;
+						}
+						can_inc_score = true;
 							//cout << "spawn new bob\n";
 					}
 					
@@ -311,16 +323,16 @@ int main(int argc, char* args[])
 					window.renderBG(pause);
 				}
 				window.P_Prender(P_P_tex[mode]);
-				window.ScoreRender(score);
+				window.ScoreRender(score, 1);
 				SDL_Delay(5);
 				window.display();
 				if (type < 0)
 				{
 					gameover = true;
 					retry = true;
-					delayretry = 3250;
+					bonus_speed = 0;
+					retry_delay = 2200;
 					check = 1;
-					score = 0;
 				}
 
 
@@ -328,19 +340,28 @@ int main(int argc, char* args[])
 			else if ( gameover) {
 				window.clear();
 				window.renderBG(gameoverTex);
-				if (!delayretry)
+				if (score > high_score)
+				{
+					high_score = score;
+					score = 0;
+				}
+				window.ScoreRender(high_score, 2);
+				if (retry_delay == 0)
+				{
 					window.renderRetry(Retry_tex[retry_type]);
-				else delayretry--;
+				}
+				else
+					retry_delay--;
 				//cout << window.GetRetry().x << " " << window.GetRetry().y << " " << window.GetRetry().w << " " << window.GetRetry().h << endl;
 				//cout << mouse_x << " " << mouse_y << endl;
 			}
 
 			window.display();
 	}	
+		Mix_FreeChunk(bob_death_sound);
 		Mix_FreeChunk(damage_sound);
 		SDL_DestroyTexture(CrosshairTex);
 		SDL_WaitThread(thread, NULL);
-		Mix_HaltMusic();
 		Mix_CloseAudio();
 		window.cleanUp();
 	return 0;
@@ -348,44 +369,41 @@ int main(int argc, char* args[])
 
 int playMusic(void* arg)
 {
-	Mix_Music* music = Mix_LoadMUS("res/sound/gamePlay.mp3");
-	Mix_Music* select = Mix_LoadMUS("res/sound/select.mp3");
-	Mix_Music* over = Mix_LoadMUS("res/sound/gameover.mp3");
-	Mix_Chunk* bob_death_sound = Mix_LoadWAV("res/sound/bobdeath.mp3");
+	Mix_Chunk* music = Mix_LoadWAV("res/sound/gamePlay.mp3");
+	Mix_Chunk* select = Mix_LoadWAV("res/sound/select.mp3");
+	Mix_Chunk* over = Mix_LoadWAV("res/sound/gameover.mp3");
 	Mix_Chunk* background_music = Mix_LoadWAV("res/sound/background_music.mp3");
 	while(gameRunning)
 	{
 		if (!gamePlay)
 		{
-			Mix_PlayMusic(music, -1);
+			Mix_PlayChannel(0, music, 0);
 
-			while (Mix_PlayingMusic())
+			while (Mix_Playing(0))
 			{
 				if (!playmus || !gameRunning)
 				{
+					Mix_HaltChannel(0);
 					break;
 				}
 			}
-
-			Mix_PlayMusic(select, 1);
-
 			if (S_type == 1)
-			{
-				Mix_PlayingMusic();
-			}
+				Mix_PlayChannel(1, select, 0);
 		}
 		else if (gameover)
 		{
-			Mix_PlayMusic(over, -1);
+			Mix_PlayChannel(0, over, 0);
 
-			while (Mix_PlayingMusic())
+			while (Mix_Playing(0))
 			{
 				if (!retry)
 				{
+					Mix_HaltChannel(0);
 					break;
 				}
 			}
-			Mix_PlayMusic(select, 1);
+			if (!retry)
+				Mix_PlayChannel(1, select, 0);
 		}
 		else if (!gameover && gamePlay && !retry)
 		{	
@@ -405,12 +423,10 @@ int playMusic(void* arg)
 				{
 					Mix_Resume(0);
 				}
-				if (Bob_deadth_sound)
-					Mix_PlayChannel(1, bob_death_sound, 0);
 			}
 		}
 	}
-	Mix_FreeChunk(bob_death_sound);
+	
 	Mix_FreeChunk(background_music);
 	return 0;
 }

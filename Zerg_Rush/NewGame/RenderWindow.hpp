@@ -20,7 +20,7 @@ public:
     void clear();
     void renderBG(SDL_Texture* background);
     void ScoreLoad(const char* p_tffpath);
-    void ScoreRender(int score);
+    void ScoreRender(int score, int mode);
     void render(Entity& p_entity);
     void render1(Bigguy& p_guy);
     void display();

@@ -104,9 +104,9 @@ void RenderWindow::renderRetry(SDL_Texture* p_tex)
 void RenderWindow::Bar_render(SDL_Texture* p_tex)
 {
     SDL_Rect dst;
-    dst.x = 812;
-    dst.y = 350;
-    dst.w = 629/2 - 12 ;
+    dst.x = 650;
+    dst.y = 120;
+    dst.w = 629 - 12 ;
     dst.h = 148/2 - 12 ;
     SDL_RenderCopy(renderer, p_tex, NULL, &dst);
 
@@ -145,13 +145,25 @@ void RenderWindow::ScoreLoad(const char* p_tffpath)
         std::cout << "can load font error: " << SDL_GetError() << std::endl;
     }
 }
-void RenderWindow::ScoreRender(int score)
+void RenderWindow::ScoreRender(int score, int mode)
 {
-    std::string scoreStr = "Score: " + std::to_string(score);
+    SDL_Surface* scoreSurface = NULL;
+    SDL_Texture* scoreTexture = NULL;
     SDL_Color textColor = { 255, 255, 255 };
-    SDL_Surface* scoreSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), textColor);
-    SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
-    SDL_Rect scoreRect = { 200, 130, scoreSurface->w, scoreSurface->h };
+    SDL_Rect scoreRect;
+    if (mode == 1)
+    {
+        std::string scoreStr = "Score: " + std::to_string(score);
+        scoreSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), textColor);
+        scoreRect = { 200, 130, scoreSurface->w, scoreSurface->h };
+    }
+    else
+    {
+        std::string scoreStr = "High Score: " + std::to_string(score);
+        scoreSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), textColor);
+        scoreRect = { 200, 130, scoreSurface->w, scoreSurface->h };
+    }
+    scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
 
     SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
     SDL_DestroyTexture(scoreTexture);
