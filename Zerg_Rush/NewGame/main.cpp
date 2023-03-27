@@ -32,6 +32,7 @@ int S_type = 3;
 
 int playMusic(void* arg);
 bool playmus = true;
+bool playmus1 = false;
 
 int main(int argc, char* args[])
 {
@@ -188,6 +189,13 @@ int main(int argc, char* args[])
 							}
 						}
 						else retry_type = 0;
+					if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+					{
+						gameover = false;
+						gamePlay = false;
+						playmus = true;
+						playmus1 = false;
+					}
 				}
 
 				if (!gamePlay)
@@ -332,6 +340,7 @@ int main(int argc, char* args[])
 					retry = true;
 					bonus_speed = 0;
 					retry_delay = 2200;
+					playmus1 = true;
 					check = 1;
 				}
 
@@ -396,7 +405,7 @@ int playMusic(void* arg)
 
 			while (Mix_Playing(0))
 			{
-				if (!retry)
+				if (!retry || !playmus1)
 				{
 					Mix_HaltChannel(0);
 					break;
