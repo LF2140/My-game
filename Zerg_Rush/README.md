@@ -2,7 +2,7 @@
 
 ## Introduction: <br />
 A game by Layout <br />
-
+You, as a player, defend our Bigguy in the middle of the screen again Bob - an entity with round and blue surface - trying to attack Bigguy<br/>
 ## How to play: <br />
 In play screen, press PLAY to play, press EXIT to exit <br />
 In gamerunning screen, left click Bob to destroy and defend Bigguy, use ESC button to pause/resume game<br />
