@@ -10,7 +10,7 @@ using namespace std;
 
 
 bool gameRunning = true;
-bool Bob_survive = true;
+bool Bob_survive = false;
 bool gameover = false;
 bool Boss_turnred = false;
 bool gamePause = false;
@@ -18,6 +18,7 @@ bool gamePlay = false;
 bool retry = false;
 bool Bob_deadth_sound = false;
 bool can_inc_score = true;
+bool can_dec_score = false;
 int type = 5;
 int score = 0;
 int bonus_speed = 0;
@@ -25,7 +26,11 @@ int Boss_health = 50;
 int timered = 300;
 int high_score = 0;
 int retry_delay = 0;
-
+int angle = 0;
+int Bob_change_delay = 8;
+int Bob_change_delay_const = 8;
+bool Reverse_bob = false;
+int which_bob = 0;
 
 const int WIDTH = 1920, HEIGHT = 1080;
 int S_type = 3;
@@ -59,6 +64,7 @@ int main(int argc, char* args[])
 	SDL_Texture* pause = window.loadTexture("res/gfx/pause.png");
 	SDL_Texture* background = window.loadSurface("res/gfx/BG.png");
 	SDL_Texture* BobTex = window.loadTexture("res/gfx/Bob.png");
+	SDL_Texture* BobTex1 = window.loadTexture("res/gfx/Bob1.png");
 	SDL_Texture* BossTex = window.loadTexture("res/gfx/Boss.png");
 	SDL_Texture* BossTex1 = window.loadTexture("res/gfx/Boss1.png");
 	SDL_Texture* CrosshairTex = window.loadTexture("res/gfx/crosshair.png");
@@ -83,18 +89,23 @@ int main(int argc, char* args[])
 	vector <SDL_Texture*> Retry_tex;
 	Retry_tex.push_back( window.loadTexture("res/gfx/retry1.png") );
 	Retry_tex.push_back( window.loadTexture("res/gfx/retry2.png") );
-
+	//mouse pos
 	int mouse_x, mouse_y, retry_x, retry_y, retry_h;
-
+	//spawn the 1st bob
 	srand(time(NULL));
 	float speed = 0;
 	float e_x = 0;
 	float e_y = 0;
 	float delta_speed_x = 0;
 	float delta_speed_y = 0;
+
+	vector<Entity> Bob_Final;
 	Entity Bob(e_x, e_y, BobTex);
-	Bob.Entity_run(WIDTH / 2, HEIGHT / 2, 5, &delta_speed_x, &delta_speed_y);
-	
+	Bob_Final.push_back(Bob);
+	Entity Bob1(e_x, e_y, BobTex1);
+	Bob_Final.push_back(Bob1);
+	Bob_Final[which_bob].Entity_run(WIDTH / 2, HEIGHT / 2, 5, &delta_speed_x, &delta_speed_y);
+
 	window.ScoreLoad("res/font/lucon.ttf");
 
 	int mode = 1;
@@ -113,15 +124,24 @@ int main(int argc, char* args[])
 			{
 				if (event.type == SDL_QUIT)
 					gameRunning = false;
-				if (gamePlay && event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob.Get_x()
-					&& mouse_x <= Bob.Get_x() + 1000 / 16 &&
-					mouse_y >= Bob.Get_y() && Bob.Get_y() + 1000 / 16)
+				if (gamePlay && event.button.button == SDL_BUTTON_LEFT && !gamePause && mouse_x >= Bob_Final[which_bob].Get_x()
+					&& mouse_x <= Bob_Final[which_bob].Get_x() + 1000 / 16 &&
+					mouse_y >= Bob_Final[which_bob].Get_y() && Bob_Final[which_bob].Get_y() + 1000 / 16)
 				{
 					//cout << "KILL BOB\n"
 					if (!Boss_turnred)
 						Mix_PlayChannel(1, bob_death_sound, 0);
 					Bob_survive = false;
-					if (can_inc_score && !Boss_turnred)
+					if (Reverse_bob)
+					{
+						type--;
+						if (can_dec_score && score>0)
+						{
+							score -= 50;
+							can_dec_score = false;
+						}
+					}
+					else if (can_inc_score && !Boss_turnred)
 					{
 						score += 50;
 						can_inc_score = false;
@@ -186,6 +206,7 @@ int main(int argc, char* args[])
 								type = 5;
 								Boss_turnred = false;
 								retry_type = 0;
+								score = 0;
 							}
 						}
 						else retry_type = 0;
@@ -195,6 +216,7 @@ int main(int argc, char* args[])
 						gamePlay = false;
 						playmus = true;
 						playmus1 = false;
+						score = 0;
 					}
 				}
 
@@ -239,19 +261,33 @@ int main(int argc, char* args[])
 					window.renderBG(beginTex);
 					SDL_Delay(2000);
 					check--;
+
 				}
 				window.clear();
 				window.renderBG(background);
 				if (Bob_survive)
 				{
-					float Bob_x = Bob.Get_x();
-					float Bob_y = Bob.Get_y();
+					//cout << which_bob << endl;
+					float Bob_x = Bob_Final[which_bob].Get_x();
+					float Bob_y = Bob_Final[which_bob].Get_y();
 					if (!gamePause)
 					{
-						Bob.Change_x(Bob_x + delta_speed_x);
-						Bob.Change_y(Bob_y + delta_speed_y);
+						if(Bob_change_delay==0)
+						{
+							Bob_Final[which_bob].Change_x(Bob_x + delta_speed_x);
+							Bob_Final[which_bob].Change_y(Bob_y + delta_speed_y);
+							angle += 5;
+							if (angle == 360)
+							{
+								angle = 0;
+							}
+							Bob_change_delay = Bob_change_delay_const - bonus_speed;
+						}
+						Bob_change_delay--;
 					}
-					window.render(Bob);
+					if (!Reverse_bob)
+						window.render(Bob_Final[which_bob], angle);
+					else window.render(Bob_Final[which_bob], angle);
 				}
 				else 
 				{
@@ -282,19 +318,34 @@ int main(int argc, char* args[])
 					}
 					//spawn another Bob
 					{
-						speed = 5 + bonus_speed;
+						speed = 5;
 						float e_x1 = rand() % 4000-200;
 						float e_y1 = rand() % 4000-200;
+						int to_rev = rand() % 8+1;
+						if (to_rev == 3)
+						{
+							Reverse_bob = true;
+							which_bob = 1;
+						}
+						else
+						{
+							Reverse_bob = false;
+							which_bob = 0;
+						}
+							
 							//cout << endl <<endl <<e_x1 << " " << e_y1<<endl<<endl;
 						if ((e_x1-WIDTH/2)*(e_x1-WIDTH/2) + (e_y1-HEIGHT/2)*(e_y1-HEIGHT/2)>=500*500)
 						{
-							Bob.Change_x(e_x1);
-							Bob.Change_y(e_y1);
-							Bob.Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
+							Bob_Final[which_bob].Change_x(e_x1);
+							Bob_Final[which_bob].Change_y(e_y1);
+							Bob_Final[which_bob].Entity_run(WIDTH / 2, HEIGHT / 2, speed, &delta_speed_x, &delta_speed_y);
 							Bob_survive = true;
 							Bob_deadth_sound = false;
 						}
-						can_inc_score = true;
+						if (!Reverse_bob)
+							can_inc_score = true;
+						else
+							can_dec_score = true;
 							//cout << "spawn new bob\n";
 					}
 					
@@ -307,13 +358,18 @@ int main(int argc, char* args[])
 				//cout << (int)Bob.Get_x() << " " << WIDTH / 2 << " " << (int)Bob.Get_y() << " " << HEIGHT / 2 << endl;
 				window.Bar_render(Health_tex[type]);
 				
-				if ( ( (int)Bob.Get_x() < 245/2 + (int)Boss.Get_x() ) && ( (int)Bob.Get_x() + 62/2 > (int)Boss.Get_x() )
-					&& ( (int)Bob.Get_y() < 245/2 + (int)Boss.Get_y() ) && ( (int)Bob.Get_y() + 62/2 > (int)Boss.Get_y() ) ) 
+				if ( ( (int)Bob_Final[which_bob].Get_x() < 245/2 + (int)Boss.Get_x() ) && ( (int)Bob_Final[which_bob].Get_x() + 62/2 > (int)Boss.Get_x() )
+					&& ( (int)Bob_Final[which_bob].Get_y() < 245/2 + (int)Boss.Get_y() ) && ( (int)Bob_Final[which_bob].Get_y() + 62/2 > (int)Boss.Get_y() ) )
 				{
-					type--;
+					if (!Reverse_bob)
+					{
+						type--;
+						Boss_turnred = true;
+					}
 					//cout << type << endl;
 					Bob_survive = false; 
-					Boss_turnred = true;
+					Bob.Change_x(-1000);
+					Bob.Change_y(-1000);
 				}
 				
 
@@ -332,7 +388,7 @@ int main(int argc, char* args[])
 				}
 				window.P_Prender(P_P_tex[mode]);
 				window.ScoreRender(score, 1);
-				SDL_Delay(5);
+				//SDL_Delay(8);
 				window.display();
 				if (type < 0)
 				{
@@ -343,8 +399,6 @@ int main(int argc, char* args[])
 					playmus1 = true;
 					check = 1;
 				}
-
-
 			}
 			else if ( gameover) {
 				window.clear();
@@ -352,7 +406,6 @@ int main(int argc, char* args[])
 				if (score > high_score)
 				{
 					high_score = score;
-					score = 0;
 				}
 				window.ScoreRender(high_score, 2);
 				if (retry_delay == 0)

@@ -21,7 +21,7 @@ public:
     void renderBG(SDL_Texture* background);
     void ScoreLoad(const char* p_tffpath);
     void ScoreRender(int score, int mode);
-    void render(Entity& p_entity);
+    void render(Entity& p_entity, int angle);
     void render1(Bigguy& p_guy);
     void display();
     SDL_Rect GetRetry();

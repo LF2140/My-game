@@ -119,6 +119,7 @@ void RenderWindow::cleanUp()
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
 }
 void RenderWindow::clear()
 {
@@ -171,7 +172,7 @@ void RenderWindow::ScoreRender(int score, int mode)
     //SDL_RenderPresent(renderer);
 }
 
-void RenderWindow::render(Entity& p_entity)
+void RenderWindow::render(Entity& p_entity, int angle)
 {
     SDL_Rect src;
     src.x = p_entity.Get_CurrentFrame().x;
@@ -184,7 +185,7 @@ void RenderWindow::render(Entity& p_entity)
     dst.y = p_entity.Get_y();
     dst.w = p_entity.Get_CurrentFrame().w / 16 ;
     dst.h = p_entity.Get_CurrentFrame().h / 16 ;
-    SDL_RenderCopy(renderer, p_entity.Get_tex(), &src, &dst);
+    SDL_RenderCopyEx(renderer, p_entity.Get_tex(), &src, &dst,angle, NULL, SDL_FLIP_NONE);
 }
 void RenderWindow::render1(Bigguy& p_guy){
     SDL_Rect src;
